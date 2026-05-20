@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bugiganga F.C. - Painel Online</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --color-primary: #0076CE; --color-secondary: #FFCC00; --color-dark: #0A2540;
+      --color-light-bg: #F4F7FA; --color-card-bg: #FFFFFF; --color-border: #E2E8F0;
+      --color-text-main: #334155; --color-text-muted: #64748B;
+      --color-success: #10B981; --color-danger: #EF4444;
+      --border-radius-sm: 6px; --border-radius-md: 10px; --border-radius-lg: 16px;
+      --font-sans: system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background-color: var(--color-light-bg); color: var(--color-text-main); }
+    #login-screen, #app-screen { width: 100%; min-height: 100vh; }
+    #app-screen { display: none; }
+    .club-shield { width: 100px; height: 100px; margin: 0 auto 1.5rem; background: #0076CE url('https://gruposputaria.club/wp-content/uploads/2026/05/slogan-bugigan.png') center/cover no-repeat; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,118,206,0.2); border: 3px solid var(--color-secondary); }
+    .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; background: linear-gradient(135deg, var(--color-dark) 0%, #005291 100%); }
+    .login-card { background: var(--color-card-bg); border-radius: var(--border-radius-lg); padding: 3rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); text-align: center; }
+    .login-card h2 { font-size: 24px; font-weight: 700; color: var(--color-dark); margin-bottom: 4px; }
+    .login-card p { font-size: 14px; color: var(--color-text-muted); margin-bottom: 2rem; }
+    .input-group { text-align: left; margin-bottom: 1.25rem; }
+    .input-label { font-size: 13px; font-weight: 600; color: var(--color-dark); margin-bottom: 6px; display: block; }
+    .custom-input { width: 100%; padding: 12px 14px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); background: #F8FAFC; font-size: 14px; color: var(--color-dark); transition: all 0.2s; }
+    .custom-input:focus { border-color: var(--color-primary); background: #FFF; outline: none; box-shadow: 0 0 0 3px rgba(0,118,206,0.15); }
+    .btn-submit { width: 100%; padding: 13px; background: var(--color-primary); color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn-submit:hover { background: #005Faa; }
+    .login-err { font-size: 13px; color: var(--color-danger); margin-top: 12px; font-weight: 500; display: none; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 2rem; border-bottom: 1px solid var(--color-border); background: var(--color-card-bg); }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-shield { width: 36px; height: 36px; background: #0076CE url('https://gruposputaria.club/wp-content/uploads/2026/05/slogan-bugigan.png') center/cover no-repeat; border-radius: 6px; border: 1.5px solid var(--color-secondary); }
+    .topbar h1 { font-size: 18px; font-weight: 700; color: var(--color-dark); }
+    .status-indicator { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .status-indicator.online { background: #D1FAE5; color: #065F46; }
+    .status-indicator.offline { background: #FEE2E2; color: #991B1B; }
+    .btn-logout { background: none; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; }
+    .tabs-container { background: var(--color-card-bg); border-bottom: 1px solid var(--color-border); padding: 0 2rem; display: flex; gap: 8px; overflow-x: auto; }
+    .tab-btn { padding: 14px 20px; font-size: 14px; font-weight: 600; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .tab-btn.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .main-content { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--color-card-bg); border: 1px solid var(--color-border); border-radius: var(--border-radius-lg); padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .stat-info .stat-label { font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; }
+    .stat-info .stat-value { font-size: 28px; font-weight: 700; color: var(--color-dark); }
+    .stat-icon { width: 48px; height: 48px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .stat-card.total .stat-icon { background: #E0F2FE; color: var(--color-primary); }
+    .stat-card.adimplente .stat-icon { background: #D1FAE5; color: var(--color-success); }
+    .stat-card.inadimplente .stat-icon { background: #FEE2E2; color: var(--color-danger); }
+    .section-card { background: var(--color-card-bg); border: 1px solid var(--color-border); border-radius: var(--border-radius-lg); padding: 1.75rem; margin-bottom: 2rem; }
+    .section-card h3 { font-size: 16px; font-weight: 700; color: var(--color-dark); margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
+    .btn-action { background: var(--color-primary); color: #fff; border: none; border-radius: var(--border-radius-md); padding: 11px 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .table-container { width: 100%; overflow-x: auto; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); }
+    .app-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .app-table th { background: #F8FAFC; padding: 12px 16px; font-size: 12px; font-weight: 700; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); text-transform: uppercase; }
+    .app-table td { padding: 14px 16px; border-bottom: 1px solid var(--color-border); }
+    .status-badge { display: inline-flex; padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .status-badge.pago { background: #E6F4EA; color: var(--color-success); }
+    .status-badge.pendente { background: #FCE8E6; color: var(--color-danger); }
+    .btn-table-action { background: #F1F5F9; border: none; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--color-primary); cursor: pointer; border-radius: var(--border-radius-sm); }
+    .btn-delete { background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: 4px; }
+    .btn-delete:hover { color: var(--color-danger); }
+    .empty-state { text-align: center; padding: 3rem; color: var(--color-text-muted); }
+    .wa-preview-box { background: #ECE5DD; border-radius: var(--border-radius-md); padding: 1.25rem; margin: 1rem 0; border: 1px solid #DCF8C6; max-height: 280px; overflow-y: auto; }
+    .wa-message-content { background: #FFFFFF; padding: 12px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: inline-block; min-width: 80%; }
+    .btn-whatsapp { background: #25D366; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .toast-notification { position: fixed; bottom: 24px; right: 24px; background: var(--color-dark); color: #fff; padding: 12px 24px; border-radius: var(--border-radius-md); display: none; z-index: 1000; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+
+  <div id="login-screen">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="club-shield"></div>
+        <h2>Bugiganga F.C.</h2>
+        <p>Painel de Controle Híbrido</p>
+        <div class="input-group">
+          <label class="input-label">Usuário</label>
+          <input type="text" id="login-user" class="custom-input" placeholder="admin">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Senha</label>
+          <input type="password" id="login-pass" class="custom-input" placeholder="••••••••">
+        </div>
+        <button class="btn-submit" onclick="executarLogin()">Entrar no Painel</button>
+        <p class="login-err" id="login-err">Credenciais incorretas.</p>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 1.5rem;">Padrão: admin / clube123</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-screen">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-shield"></div>
+        <h1>Bugiganga F.C. <span id="modo-status" class="status-indicator offline">LOCAL</span></h1>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-logout" onclick="ejecutarLogout()"><i class="ti ti-logout"></i> Sair</button>
+      </div>
+    </div>
+
+    <div class="tabs-container">
+      <button class="tab-btn active" onclick="mudarAba('dashboard')"><i class="ti ti-chart-pie"></i> Resumo</button>
+      <button class="tab-btn" onclick="mudarAba('atletas')"><i class="ti ti-shirt-sport"></i> Atletas</button>
+      <button class="tab-btn" onclick="mudarAba('mensalidades')"><i class="ti ti-currency-dollar"></i> Mensalidades</button>
+      <button class="tab-btn" onclick="mudarAba('whatsapp')"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+    </div>
+
+    <div class="main-content">
+      <div class="tab-content active" id="tab-dashboard">
+        <div class="stats-grid" id="dashboard-stats"></div>
+        <div class="section-card">
+          <h3><i class="ti ti-alert-circle" style="color: var(--color-danger);"></i> Pendências do Mês Atual</h3>
+          <div class="table-container" id="dashboard-pendentes"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-atletas">
+        <div class="section-card">
+          <h3><i class="ti ti-user-plus"></i> Registrar Atleta</h3>
+          <div class="form-grid">
+            <div><label class="input-label">Nome Completo</label><input type="text" id="at-nome" class="custom-input"></div>
+            <div>
+              <label class="input-label">Posição</label>
+              <select id="at-pos" class="custom-input">
+                <option value="">Selecione...</option><option>Goleiro</option><option>Zagueiro</option><option>Lateral</option><option>Volante</option><option>Meia</option><option>Atacante</option>
+              </select>
+            </div>
+            <div><label class="input-label">Mensalidade (R$)</label><input type="number" id="at-valor" class="custom-input" placeholder="50"></div>
+            <div><label class="input-label">WhatsApp</label><input type="text" id="at-fone" class="custom-input" placeholder="79 99999-9999"></div>
+          </div>
+          <button class="btn-action" style="margin-top:1.5rem" onclick="cadastrarAtleta()"><i class="ti ti-plus"></i> Salvar Jogador</button>
+        </div>
+        <div class="section-card">
+          <h3>Elenco Registrado</h3>
+          <div class="table-container" id="lista-atletas-container"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-mensalidades">
+        <div class="section-card">
+          <h3><i class="ti ti-file-invoice"></i> Dar Baixa em Pagamento</h3>
+          <div class="form-grid">
+            <div><label class="input-label">Atleta</label><select id="pg-atleta" class="custom-input"></select></div>
+            <div><label class="input-label">Mês</label><input type="month" id="pg-mes" class="custom-input"></div>
+            <div><label class="input-label">Valor Pago</label><input type="number" id="pg-valor" class="custom-input" placeholder="Valor Padrão"></div>
+            <div><label class="input-label">Data</label><input type="date" id="pg-data" class="custom-input"></div>
+          </div>
+          <button class="btn-action" style="margin-top:1.5rem" onclick="lancarPagamento()"><i class="ti ti-check"></i> Confirmar Caixa</button>
+        </div>
+        <div class="section-card">
+          <h3>Histórico Contábil</h3>
+          <div class="filter-bar">
+            <input type="text" id="busca-nome" class="custom-input" style="flex:2" placeholder="🔍 Buscar atleta..." oninput="atualizarTabelaMensalidades()">
+            <select id="filtro-mes" class="custom-input" style="flex:1" onchange="atualizarTabelaMensalidades()"></select>
+            <select id="filtro-status" class="custom-input" style="flex:1" onchange="atualizarTabelaMensalidades()">
+              <option value="">Todos</option><option value="pago">Pagos</option><option value="pendente">Pendentes</option>
+            </select>
+          </div>
+          <div class="table-container" id="lista-mensalidades-container"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-whatsapp">
+        <div class="section-card" style="border-left: 4px solid #25D366;">
+          <h3><i class="ti ti-brand-whatsapp" style="color: #25D366;"></i> Relatórios para WhatsApp</h3>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <input type="month" id="wa-mes" class="custom-input" style="width:auto" oninput="gerarMensagemWhatsApp()">
+            <select id="wa-tipo" class="custom-input" style="width:auto" onchange="gerarMensagemWhatsApp()">
+              <option value="todos">Balanço Geral</option><option value="inadimplentes">Apenas Devedores</option><option value="adimplentes">Apenas Pagos</option>
+            </select>
+          </div>
+          <div class="wa-preview-box"><div class="wa-message-content" id="wa-text-preview"></div></div>
+          <button class="btn-whatsapp" onclick="enviarParaWhatsApp()"><i class="ti ti-brand-whatsapp"></i> Compartilhar no WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-notification" id="toast-popup"></div>
+
+  <script>
+    // Configurações do seu Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8poOmUTJ4QvbCCFynAQBRx_4DOPaEcdg",
+      authDomain: "bugigangafc.firebaseapp.com",
+      databaseURL: "https://bugigangafc-default-rtdb.firebaseio.com/",
+      projectId: "bugigangafc",
+      storageBucket: "bugigangafc.firebasestorage.app",
+      messagingSenderId: "997267835481",
+      appId: "1:997267835481:web:de1af5586a4eb071d6ff48"
+    };
+
+    let db = null;
+    let usandoFirebase = false;
+    let atletas = [];
+    let pagamentos = [];
+    const mesVigente = new Date().toISOString().slice(0,7);
+
+    // Carrega os dados locais por garantia padrão (Evita travar o login se o Firebase demorar)
+    function carregarDadosLocais() {
+      try {
+        atletas = JSON.parse(localStorage.getItem('bfc_atletas')) || [];
+        pagamentos = JSON.parse(localStorage.getItem('bfc_pagamentos')) || [];
+      } catch (e) {
+        atletas = []; pagamentos = [];
+      }
+    }
+    carregarDadosLocais();
+
+    // Inicialização segura do Firebase
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+      
+      // Escuta dados em tempo real
+      db.ref('dados').on('value', snapshot => {
+        const data = snapshot.val() || {};
+        atletas = data.atletas ? Object.values(data.atletas) : [];
+        pagamentos = data.pagamentos ? Object.values(data.pagamentos) : [];
+        
+        usandoFirebase = true;
+        atualizarIndicadorModo();
+        
+        // Salva uma cópia local atualizada para contingência offline
+        localStorage.setItem('bfc_atletas', JSON.stringify(atletas));
+        localStorage.setItem('bfc_pagamentos', JSON.stringify(pagamentos));
+        
+        if(document.getElementById('app-screen').style.display === 'block') {
+          sincronizarInterface();
+        }
+      }, error => {
+        console.warn("Firebase bloqueado por regras de segurança. Operando em modo LOCAL.");
+        usandoFirebase = false;
+        atualizarIndicadorModo();
+      });
+    } catch (e) {
+      console.error("Não foi possível conectar ao Firebase. Operando no modo LOCAL.", e);
+      usandoFirebase = false;
+    }
+
+    function atualizarIndicadorModo() {
+      const ind = document.getElementById('modo-status');
+      if(ind) {
+        if(usandoFirebase) {
+          ind.textContent = "NUVEM";
+          ind.className = "status-indicator online";
+        } else {
+          ind.textContent = "LOCAL";
+          ind.className = "status-indicator offline";
+        }
+      }
+    }
+
+    function guardarDados() {
+      // Sempre guarda no Local Storage do navegador
+      localStorage.setItem('bfc_atletas', JSON.stringify(atletas));
+      localStorage.setItem('bfc_pagamentos', JSON.stringify(pagamentos));
+
+      // Se o Firebase estiver ativo e liberado, guarda também na nuvem
+      if(usandoFirebase && db) {
+        db.ref('dados/atletas').set(atletas.reduce((acc, a) => ({...acc, [a.id]: a}), {}));
+        db.ref('dados/pagamentos').set(pagamentos.reduce((acc, p) => ({...acc, [p.id]: p}), {}));
+      }
+    }
+
+    function emitirAviso(msg) {
+      const box = document.getElementById('toast-popup');
+      if(box) {
+        box.textContent = msg; box.style.display = 'block';
+        setTimeout(() => box.style.display = 'none', 2500);
+      }
+    }
+
+    function executarLogin() {
+      if(document.getElementById('login-user').value.trim() === 'admin' && document.getElementById('login-pass').value === 'clube123') {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        atualizarIndicadorModo();
+        sincronizarInterface();
+      } else {
+        document.getElementById('login-err').style.display = 'block';
+      }
+    }
+
+    function ejecutarLogout() { 
+      document.getElementById('app-screen').style.display = 'none'; 
+      document.getElementById('login-screen').style.display = 'block'; 
+    }
+
+    function mudarAba(id) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const abas = ['dashboard','atletas','mensalidades','whatsapp'];
+      document.querySelectorAll('.tab-btn')[abas.indexOf(id)].classList.add('active');
+      document.getElementById('tab-' + id).classList.add('active');
+    }
+
+    function formataMesAno(m) { if(!m) return ''; const [ano, mes] = m.split('-'); const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return meses[parseInt(mes)-1] + '/' + ano; }
+    function formataMoeda(v) { return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+    function checarAdimplencia(id, mes) { return pagamentos.some(p => p.atletaId === id && p.mes === mes); }
+
+    function sincronizarInterface() {
+      atualizarDashboard();
+      atualizarAbaAtletas();
+      atualizarAbaMensalidades();
+      gerarMensagemWhatsApp();
+    }
+
+    function atualizarDashboard() {
+      const total = atletas.length;
+      const pagos = atletas.filter(a => checarAdimplencia(a.id, mesVigente)).length;
+      const devedores = total - pagos;
+      document.getElementById('dashboard-stats').innerHTML = `
+        <div class="stat-card total"><div class="stat-info"><div class="stat-label">Elenco</div><div class="stat-value">${total}</div></div><div class="stat-icon"><i class="ti ti-users"></i></div></div>
+        <div class="stat-card adimplente"><div class="stat-info"><div class="stat-label">Pagos (${formataMesAno(mesVigente)})</div><div class="stat-value">${pagos}</div></div><div class="stat-icon"><i class="ti ti-circle-check"></i></div></div>
+        <div class="stat-card inadimplente"><div class="stat-info"><div class="stat-label">Pendentes</div><div class="stat-value">${devedores}</div></div><div class="stat-icon"><i class="ti ti-clock"></i></div></div>
+      `;
+      const pendentes = atletas.filter(a => !checarAdimplencia(a.id, mesVigente));
+      const container = document.getElementById('dashboard-pendentes');
+      if(pendentes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="ti ti-trophy"></i>Bugiganga F.C. 100% em dia!</div>';
+      } else {
+        container.innerHTML = `<table class="app-table"><thead><tr><th>Atleta</th><th>Valor</th><th>Ação</th></tr></thead><tbody>` + 
+          pendentes.map(a => `<tr><td><strong>${a.nome}</strong></td><td style="color:var(--color-danger);font-weight:600">${formataMoeda(a.valor)}</td><td><button class="btn-table-action" onclick="recebimentoRapido('${a.id}')">Baixar</button></td></tr>`).join('') + `</tbody></table>`;
+      }
+    }
+
+    function recebimentoRapido(id) {
+      const a = atletas.find(x => x.id === id); if(!a) return;
+      pagamentos.push({ id: 'p_' + Date.now(), atletaId: id, mes: mesVigente, valor: a.valor, data: new Date().toISOString().slice(0,10) });
+      guardarDados(); sincronizarInterface(); emitirAviso('Pagamento salvo!');
+    }
+
+    function cadastrarAtleta() {
+      const nome = document.getElementById('at-nome').value.trim();
+      const posicao = document.getElementById('at-pos').value;
+      const valor = document.getElementById('at-valor').value;
+      const fone = document.getElementById('at-fone').value.trim();
+      if(!nome || !valor) return;
+      atletas.push({ id: 'a_' + Date.now(), nome, posicao, valor: parseFloat(valor), fone });
+      guardarDados(); sincronizarInterface();
+      document.getElementById('at-nome').value = ''; document.getElementById('at-valor').value = ''; document.getElementById('at-fone').value = '';
+      emitirAviso('Atleta salvo!');
+    }
+
+    function deletarAtleta(id) {
+      if(!confirm('Remover jogador?')) return;
+      atletas = atletas.filter(a => a.id !== id); pagamentos = pagamentos.filter(p => p.atletaId !== id);
+      guardarDados(); sincronizarInterface();
+    }
+
+    function atualizarAbaAtletas() {
+      const container = document.getElementById('lista-atletas-container');
+      if(atletas.length === 0) { container.innerHTML = '<div class="empty-state">Nenhum jogador.</div>'; return; }
+      container.innerHTML = `<table class="app-table"><thead><tr><th>Nome</th><th>Posição</th><th>Valor</th><th>Ação</th></tr></thead><tbody>` +
+        atletas.map(a => `<tr><td><strong>${a.nome}</strong></td><td>${a.posicao||'—'}</td><td>${formataMoeda(a.valor)}</td><td><button class="btn-delete" onclick="deletarAtleta('${a.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('') + `</tbody></table>`;
+    }
+
+    function atualizarAbaMensalidades() {
+      document.getElementById('pg-atleta').innerHTML = '<option value="">Escolha...</option>' + atletas.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+      const listMeses = [...new Set(pagamentos.map(p => p.mes))].sort().reverse();
+      document.getElementById('filtro-mes').innerHTML = '<option value="">Mês atual</option>' + listMeses.map(m => `<option value="${m}">${formataMesAno(m)}</option>`).join('');
+      atualizarTabelaMensalidades();
+    }
+
+    function lancarPagamento() {
+      const atletaId = document.getElementById('pg-atleta').value;
+      const mes = document.getElementById('pg-mes').value;
+      const valor = document.getElementById('pg-valor').value;
+      const data = document.getElementById('pg-data').value;
+      if(!atletaId || !mes) return;
+      const a = atletas.find(x => x.id === atletaId);
+      pagamentos.push({ id: 'p_' + Date.now(), atletaId, mes, valor: parseFloat(valor || a.valor), data: data || new Date().toISOString().slice(0,10) });
+      guardarDados(); sincronizarInterface(); emitirAviso('Mensalidade Registrada!');
+    }
+
+    function estornarPagamento(id) { 
+      pagamentos = pagamentos.filter(p => p.id !== id); 
+      guardarDados(); sincronizarInterface(); emitirAviso('Estornado.'); 
+    }
+
+    function atualizarTabelaMensalidades() {
+      const busca = document.getElementById('busca-nome').value.toLowerCase();
+      const mesAnalise = document.getElementById('filtro-mes').value || mesVigente;
+      const fStatus = document.getElementById('filtro-status').value;
+      let filtrados = atletas.filter(a => a.nome.toLowerCase().includes(busca));
+      if(fStatus === 'pago') filtrados = filtrados.filter(a => checarAdimplencia(a.id, mesAnalise));
+      if(fStatus === 'pendente') filtrados = filtrados.filter(a => !checarAdimplencia(a.id, mesAnalise));
+      
+      document.getElementById('lista-mensalidades-container').innerHTML = `<table class="app-table"><thead><tr><th>Nome</th><th>Status</th><th>Estornar</th></tr></thead><tbody>` +
+        filtrados.map(a => {
+          const pg = pagamentos.find(p => p.atletaId === a.id && p.mes === mesAnalise);
+          return `<tr><td><strong>${a.nome}</strong></td><td><span class="status-badge ${pg?'pago':'pendente'}">${pg?'Pago':'Pendente'}</span></td><td>${pg?`<button class="btn-delete" onclick="estornarPagamento('${pg.id}')"><i class="ti ti-arrow-back-up"></i></button>`:'—'}</td></tr>`;
+        }).join('') + `</tbody></table>`;
+    }
+
+    function gerarMensagemWhatsApp() {
+      const mes = document.getElementById('wa-mes').value || mesVigente;
+      const tipo = document.getElementById('wa-tipo').value;
+      const adimplentes = atletas.filter(a => checarAdimplencia(a.id, mes));
+      const inadimplentes = atletas.filter(a => !checarAdimplencia(a.id, mes));
+      const arrecadado = pagamentos.filter(p => p.mes === mes).reduce((s,p) => s + parseFloat(p.valor), 0);
+
+      let msg = `⚽ *BUGIGANGA F.C. - BALANÇO*\n📅 *Mês:* ${formataMesAno(mes)}\n\n`;
+      if(tipo === 'todos' || tipo === 'adimplentes') {
+        msg += `✅ *PAGOS EM DIA (${adimplentes.length})*\n` + (adimplentes.length===0 ? '_Nenhum_\n' : adimplentes.map(a=>`• ${a.nome}`).join('\n')) + `\n\n`;
+      }
+      if(tipo === 'todos' || tipo === 'inadimplentes') {
+        msg += `❌ *PENDENTES (${inadimplentes.length})*\n` + (inadimplentes.length===0 ? '_Nenhuma pendência_\n' : inadimplentes.map(a=>`• ${a.nome} (${formataMoeda(a.valor)})`).join('\n')) + `\n\n`;
+      }
+      msg += `💰 *Total Caixa:* ${formataMoeda(arrecadado)}`;
+      document.getElementById('wa-text-preview').textContent = msg;
+    }
+
+    function enviarParaWhatsApp() { window.open('https://wa.me/?text=' + encodeURIComponent(document.getElementById('wa-text-preview').textContent), '_blank'); }
+
+    document.getElementById('pg-mes').value = mesVigente;
+    document.getElementById('wa-mes').value = mesVigente;
+    document.getElementById('pg-data').value = new Date().toISOString().slice(0,10);
+  </script>
+</body>
+</html>
