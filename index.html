@@ -70,7 +70,7 @@
     .btn-delete:hover { color: var(--color-danger); }
     .empty-state { text-align: center; padding: 3rem; color: var(--color-text-muted); }
     .wa-preview-box { background: #ECE5DD; border-radius: var(--border-radius-md); padding: 1.25rem; margin: 1rem 0; border: 1px solid #DCF8C6; max-height: 280px; overflow-y: auto; }
-    .wa-message-content { background: #FFFFFF; padding: 12px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: inline-block; min-width: 80%; white-space: pre-wrap; }
+    .wa-message-content { background: #FFFFFF; padding: 12px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: inline-block; min-width: 80%; white-space: pre-wrap; font-family: inherit; }
     .btn-whatsapp { background: #25D366; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
     .toast-notification { position: fixed; bottom: 24px; right: 24px; background: var(--color-dark); color: #fff; padding: 12px 24px; border-radius: var(--border-radius-md); display: none; z-index: 1000; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
   </style>
@@ -178,6 +178,7 @@
             </select>
           </div>
           <div class="wa-preview-box"><div class="wa-message-content" id="wa-text-preview"></div></div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 1rem;">Nota: A pré-visualização acima pode ocultar os emojis, mas eles serão enviados perfeitamente ao clicar no botão.</div>
           <button class="btn-whatsapp" onclick="enviarParaWhatsApp()"><i class="ti ti-brand-whatsapp"></i> Compartilhar no WhatsApp</button>
         </div>
       </div>
@@ -338,6 +339,9 @@
         }).join('') + `</tbody></table>`;
     }
 
+    // Variável global para reter o texto cru estruturado sem perdas de codificação
+    let textoGlobalWhats = "";
+
     function gerarMensagemWhatsApp() {
       const mes = document.getElementById('wa-mes').value || mesVigente;
       const tipo = document.getElementById('wa-tipo').value;
@@ -345,19 +349,25 @@
       const inadimplentes = atletas.filter(a => !checarAdimplencia(a.id, mes));
       const arrecadado = pagamentos.filter(p => p.mes === mes).reduce((s,p) => s + parseFloat(p.valor), 0);
 
-      // Emojis universais perfeitamente compatíveis com codificação e leitura do WhatsApp 
-      let msg = `⚽ *BUGIGANGA F.C. - BALANCO*\n📅 *Mes:* ${formataMesAno(mes)}\n\n`;
+      // Texto cru estruturado com acentuação correta e emojis nativos estáveis
+      let msg = `⚽ *BUGIGANGA F.C. - BALANÇO*\n📅 *Mês:* ${formataMesAno(mes)}\n\n`;
       if(tipo === 'todos' || tipo === 'adimplentes') {
         msg += `✅ *PAGOS EM DIA (${adimplentes.length})*\n` + (adimplentes.length===0 ? '_Nenhum_\n' : adimplentes.map(a=>`- ${a.nome}`).join('\n')) + `\n\n`;
       }
       if(tipo === 'todos' || tipo === 'inadimplentes') {
-        msg += `❌ *PENDENTES (${inadimplentes.length})*\n` + (inadimplentes.length===0 ? '_Nenhuma pendencia_\n' : inadimplentes.map(a=>`- ${a.nome} (${formataMoeda(a.valor)})`).join('\n')) + `\n\n`;
+        msg += `❌ *PENDENTES (${inadimplentes.length})*\n` + (inadimplentes.length===0 ? '_Nenhuma pendência_\n' : inadimplentes.map(a=>`- ${a.nome} (${formataMoeda(a.valor)})`).join('\n')) + `\n\n`;
       }
       msg += `💵 *Total Caixa:* ${formataMoeda(arrecadado)}`;
+      
+      textoGlobalWhats = msg;
       document.getElementById('wa-text-preview').textContent = msg;
     }
 
-    function enviarParaWhatsApp() { window.open('https://wa.me/?text=' + encodeURIComponent(document.getElementById('wa-text-preview').textContent), '_blank'); }
+    function enviarParaWhatsApp() { 
+      // Garante que os emojis e os caracteres acentuados (como Ç, Ô, Ê) se convertam perfeitamente para a API do WhatsApp
+      const textoTratado = encodeURIComponent(textoGlobalWhats);
+      window.open('https://api.whatsapp.com/send?text=' + textoTratado, '_blank'); 
+    }
 
     document.getElementById('pg-mes').value = mesVigente;
     document.getElementById('wa-mes').value = mesVigente;
