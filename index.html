@@ -22,7 +22,7 @@
     body { font-family: var(--font-sans); background-color: var(--color-light-bg); color: var(--color-text-main); }
     #login-screen, #app-screen { width: 100%; min-height: 100vh; }
     #app-screen { display: none; }
-    .club-shield { width: 100px; height: 100px; margin: 0 auto 1.5rem; background: #0076CE url('https://gruposputaria.club/wp-content/uploads/2026/05/slogan-bugigan.png') center/cover no-repeat; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,118,206,0.2); border: 3px solid var(--color-secondary); }
+    .club-shield { width: 100px; height: 100px; margin: 0 auto 1.5rem; background: #0076CE url('https://i.imgur.com/vHqgS9L.jpeg') center/cover no-repeat; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,118,206,0.2); border: 3px solid var(--color-secondary); }
     .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; background: linear-gradient(135deg, var(--color-dark) 0%, #005291 100%); }
     .login-card { background: var(--color-card-bg); border-radius: var(--border-radius-lg); padding: 3rem 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); text-align: center; }
     .login-card h2 { font-size: 24px; font-weight: 700; color: var(--color-dark); margin-bottom: 4px; }
@@ -36,11 +36,8 @@
     .login-err { font-size: 13px; color: var(--color-danger); margin-top: 12px; font-weight: 500; display: none; }
     .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 2rem; border-bottom: 1px solid var(--color-border); background: var(--color-card-bg); }
     .topbar-left { display: flex; align-items: center; gap: 12px; }
-    .topbar-shield { width: 36px; height: 36px; background: #0076CE url('https://gruposputaria.club/wp-content/uploads/2026/05/slogan-bugigan.png') center/cover no-repeat; border-radius: 6px; border: 1.5px solid var(--color-secondary); }
+    .topbar-shield { width: 36px; height: 36px; background: #0076CE url('https://i.imgur.com/vHqgS9L.jpeg') center/cover no-repeat; border-radius: 6px; border: 1.5px solid var(--color-secondary); }
     .topbar h1 { font-size: 18px; font-weight: 700; color: var(--color-dark); }
-    .status-indicator { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-    .status-indicator.online { background: #D1FAE5; color: #065F46; }
-    .status-indicator.offline { background: #FEE2E2; color: #991B1B; }
     .btn-logout { background: none; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; }
     .tabs-container { background: var(--color-card-bg); border-bottom: 1px solid var(--color-border); padding: 0 2rem; display: flex; gap: 8px; overflow-x: auto; }
     .tab-btn { padding: 14px 20px; font-size: 14px; font-weight: 600; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
@@ -73,7 +70,7 @@
     .btn-delete:hover { color: var(--color-danger); }
     .empty-state { text-align: center; padding: 3rem; color: var(--color-text-muted); }
     .wa-preview-box { background: #ECE5DD; border-radius: var(--border-radius-md); padding: 1.25rem; margin: 1rem 0; border: 1px solid #DCF8C6; max-height: 280px; overflow-y: auto; }
-    .wa-message-content { background: #FFFFFF; padding: 12px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: inline-block; min-width: 80%; }
+    .wa-message-content { background: #FFFFFF; padding: 12px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: inline-block; min-width: 80%; white-space: pre-wrap; }
     .btn-whatsapp { background: #25D366; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
     .toast-notification { position: fixed; bottom: 24px; right: 24px; background: var(--color-dark); color: #fff; padding: 12px 24px; border-radius: var(--border-radius-md); display: none; z-index: 1000; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
   </style>
@@ -85,7 +82,7 @@
       <div class="login-card">
         <div class="club-shield"></div>
         <h2>Bugiganga F.C.</h2>
-        <p>Painel de Controle Híbrido</p>
+        <p>Painel de Controle em Tempo Real</p>
         <div class="input-group">
           <label class="input-label">Usuário</label>
           <input type="text" id="login-user" class="custom-input" placeholder="admin">
@@ -96,7 +93,6 @@
         </div>
         <button class="btn-submit" onclick="executarLogin()">Entrar no Painel</button>
         <p class="login-err" id="login-err">Credenciais incorretas.</p>
-        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 1.5rem;">Padrão: admin / clube123</div>
       </div>
     </div>
   </div>
@@ -105,10 +101,10 @@
     <div class="topbar">
       <div class="topbar-left">
         <div class="topbar-shield"></div>
-        <h1>Bugiganga F.C. <span id="modo-status" class="status-indicator offline">LOCAL</span></h1>
+        <h1>Bugiganga F.C. <span style="font-size: 11px; background: #E0F2FE; color: var(--color-primary); padding: 2px 8px; border-radius: 20px;">NUVEM</span></h1>
       </div>
       <div class="topbar-right">
-        <button class="btn-logout" onclick="ejecutarLogout()"><i class="ti ti-logout"></i> Sair</button>
+        <button class="btn-logout" onclick="executarLogout()"><i class="ti ti-logout"></i> Sair</button>
       </div>
     </div>
 
@@ -135,9 +131,7 @@
             <div><label class="input-label">Nome Completo</label><input type="text" id="at-nome" class="custom-input"></div>
             <div>
               <label class="input-label">Posição</label>
-              <select id="at-pos" class="custom-input">
-                <option value="">Selecione...</option><option>Goleiro</option><option>Zagueiro</option><option>Lateral</option><option>Volante</option><option>Meia</option><option>Atacante</option>
-              </select>
+              <input type="text" id="at-pos" class="custom-input" placeholder="Ex: Zagueiro, Meia, Lateral...">
             </div>
             <div><label class="input-label">Mensalidade (R$)</label><input type="number" id="at-valor" class="custom-input" placeholder="50"></div>
             <div><label class="input-label">WhatsApp</label><input type="text" id="at-fone" class="custom-input" placeholder="79 99999-9999"></div>
@@ -193,7 +187,6 @@
   <div class="toast-notification" id="toast-popup"></div>
 
   <script>
-    // Configurações do seu Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyB8poOmUTJ4QvbCCFynAQBRx_4DOPaEcdg",
       authDomain: "bugigangafc.firebaseapp.com",
@@ -204,102 +197,42 @@
       appId: "1:997267835481:web:de1af5586a4eb071d6ff48"
     };
 
-    let db = null;
-    let usandoFirebase = false;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     let atletas = [];
     let pagamentos = [];
     const mesVigente = new Date().toISOString().slice(0,7);
 
-    // Carrega os dados locais por garantia padrão (Evita travar o login se o Firebase demorar)
-    function carregarDadosLocais() {
-      try {
-        atletas = JSON.parse(localStorage.getItem('bfc_atletas')) || [];
-        pagamentos = JSON.parse(localStorage.getItem('bfc_pagamentos')) || [];
-      } catch (e) {
-        atletas = []; pagamentos = [];
-      }
-    }
-    carregarDadosLocais();
+    db.ref('dados').on('value', snapshot => {
+      const data = snapshot.val() || {};
+      atletas = data.atletas ? Object.values(data.atletas) : [];
+      pagamentos = data.pagamentos ? Object.values(data.pagamentos) : [];
+      sincronizarInterface();
+    });
 
-    // Inicialização segura do Firebase
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      
-      // Escuta dados em tempo real
-      db.ref('dados').on('value', snapshot => {
-        const data = snapshot.val() || {};
-        atletas = data.atletas ? Object.values(data.atletas) : [];
-        pagamentos = data.pagamentos ? Object.values(data.pagamentos) : [];
-        
-        usandoFirebase = true;
-        atualizarIndicadorModo();
-        
-        // Salva uma cópia local atualizada para contingência offline
-        localStorage.setItem('bfc_atletas', JSON.stringify(atletas));
-        localStorage.setItem('bfc_pagamentos', JSON.stringify(pagamentos));
-        
-        if(document.getElementById('app-screen').style.display === 'block') {
-          sincronizarInterface();
-        }
-      }, error => {
-        console.warn("Firebase bloqueado por regras de segurança. Operando em modo LOCAL.");
-        usandoFirebase = false;
-        atualizarIndicadorModo();
-      });
-    } catch (e) {
-      console.error("Não foi possível conectar ao Firebase. Operando no modo LOCAL.", e);
-      usandoFirebase = false;
-    }
-
-    function atualizarIndicadorModo() {
-      const ind = document.getElementById('modo-status');
-      if(ind) {
-        if(usandoFirebase) {
-          ind.textContent = "NUVEM";
-          ind.className = "status-indicator online";
-        } else {
-          ind.textContent = "LOCAL";
-          ind.className = "status-indicator offline";
-        }
-      }
-    }
-
-    function guardarDados() {
-      // Sempre guarda no Local Storage do navegador
-      localStorage.setItem('bfc_atletas', JSON.stringify(atletas));
-      localStorage.setItem('bfc_pagamentos', JSON.stringify(pagamentos));
-
-      // Se o Firebase estiver ativo e liberado, guarda também na nuvem
-      if(usandoFirebase && db) {
-        db.ref('dados/atletas').set(atletas.reduce((acc, a) => ({...acc, [a.id]: a}), {}));
-        db.ref('dados/pagamentos').set(pagamentos.reduce((acc, p) => ({...acc, [p.id]: p}), {}));
-      }
+    function salvarFirebase() {
+      db.ref('dados/atletas').set(atletas.reduce((acc, a) => ({...acc, [a.id]: a}), {}));
+      db.ref('dados/pagamentos').set(pagamentos.reduce((acc, p) => ({...acc, [p.id]: p}), {}));
     }
 
     function emitirAviso(msg) {
       const box = document.getElementById('toast-popup');
-      if(box) {
-        box.textContent = msg; box.style.display = 'block';
-        setTimeout(() => box.style.display = 'none', 2500);
-      }
+      box.textContent = msg; box.style.display = 'block';
+      setTimeout(() => box.style.display = 'none', 2500);
     }
 
     function executarLogin() {
-      if(document.getElementById('login-user').value.trim() === 'admin' && document.getElementById('login-pass').value === 'clube123') {
+      if(document.getElementById('login-user').value.trim() === 'admin' && document.getElementById('login-pass').value === 'bugishow2026') {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
-        atualizarIndicadorModo();
         sincronizarInterface();
       } else {
         document.getElementById('login-err').style.display = 'block';
       }
     }
 
-    function ejecutarLogout() { 
-      document.getElementById('app-screen').style.display = 'none'; 
-      document.getElementById('login-screen').style.display = 'block'; 
-    }
+    function executarLogout() { document.getElementById('app-screen').style.display = 'none'; document.getElementById('login-screen').style.display = 'block'; }
 
     function mudarAba(id) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -342,25 +275,25 @@
     function recebimentoRapido(id) {
       const a = atletas.find(x => x.id === id); if(!a) return;
       pagamentos.push({ id: 'p_' + Date.now(), atletaId: id, mes: mesVigente, valor: a.valor, data: new Date().toISOString().slice(0,10) });
-      guardarDados(); sincronizarInterface(); emitirAviso('Pagamento salvo!');
+      salvarFirebase(); emitirAviso('Pagamento registrado na nuvem!');
     }
 
     function cadastrarAtleta() {
       const nome = document.getElementById('at-nome').value.trim();
-      const posicao = document.getElementById('at-pos').value;
+      const posicao = document.getElementById('at-pos').value.trim();
       const valor = document.getElementById('at-valor').value;
       const fone = document.getElementById('at-fone').value.trim();
       if(!nome || !valor) return;
-      atletas.push({ id: 'a_' + Date.now(), nome, posicao, valor: parseFloat(valor), fone });
-      guardarDados(); sincronizarInterface();
-      document.getElementById('at-nome').value = ''; document.getElementById('at-valor').value = ''; document.getElementById('at-fone').value = '';
+      atletas.push({ id: 'a_' + Date.now(), nome, posicao: posicao || 'Não informada', valor: parseFloat(valor), fone });
+      salvarFirebase();
+      document.getElementById('at-nome').value = ''; document.getElementById('at-pos').value = ''; document.getElementById('at-valor').value = ''; document.getElementById('at-fone').value = '';
       emitirAviso('Atleta salvo!');
     }
 
     function deletarAtleta(id) {
       if(!confirm('Remover jogador?')) return;
       atletas = atletas.filter(a => a.id !== id); pagamentos = pagamentos.filter(p => p.atletaId !== id);
-      guardarDados(); sincronizarInterface();
+      salvarFirebase();
     }
 
     function atualizarAbaAtletas() {
@@ -385,13 +318,10 @@
       if(!atletaId || !mes) return;
       const a = atletas.find(x => x.id === atletaId);
       pagamentos.push({ id: 'p_' + Date.now(), atletaId, mes, valor: parseFloat(valor || a.valor), data: data || new Date().toISOString().slice(0,10) });
-      guardarDados(); sincronizarInterface(); emitirAviso('Mensalidade Registrada!');
+      salvarFirebase(); emitirAviso('Mensalidade Registrada!');
     }
 
-    function estornarPagamento(id) { 
-      pagamentos = pagamentos.filter(p => p.id !== id); 
-      guardarDados(); sincronizarInterface(); emitirAviso('Estornado.'); 
-    }
+    function estornarPagamento(id) { pagamentos = pagamentos.filter(p => p.id !== id); salvarFirebase(); emitirAviso('Estornado.'); }
 
     function atualizarTabelaMensalidades() {
       const busca = document.getElementById('busca-nome').value.toLowerCase();
@@ -415,14 +345,15 @@
       const inadimplentes = atletas.filter(a => !checarAdimplencia(a.id, mes));
       const arrecadado = pagamentos.filter(p => p.mes === mes).reduce((s,p) => s + parseFloat(p.valor), 0);
 
-      let msg = `⚽ *BUGIGANGA F.C. - BALANÇO*\n📅 *Mês:* ${formataMesAno(mes)}\n\n`;
+      // Emojis universais perfeitamente compatíveis com codificação e leitura do WhatsApp 
+      let msg = `⚽ *BUGIGANGA F.C. - BALANCO*\n📅 *Mes:* ${formataMesAno(mes)}\n\n`;
       if(tipo === 'todos' || tipo === 'adimplentes') {
-        msg += `✅ *PAGOS EM DIA (${adimplentes.length})*\n` + (adimplentes.length===0 ? '_Nenhum_\n' : adimplentes.map(a=>`• ${a.nome}`).join('\n')) + `\n\n`;
+        msg += `✅ *PAGOS EM DIA (${adimplentes.length})*\n` + (adimplentes.length===0 ? '_Nenhum_\n' : adimplentes.map(a=>`- ${a.nome}`).join('\n')) + `\n\n`;
       }
       if(tipo === 'todos' || tipo === 'inadimplentes') {
-        msg += `❌ *PENDENTES (${inadimplentes.length})*\n` + (inadimplentes.length===0 ? '_Nenhuma pendência_\n' : inadimplentes.map(a=>`• ${a.nome} (${formataMoeda(a.valor)})`).join('\n')) + `\n\n`;
+        msg += `❌ *PENDENTES (${inadimplentes.length})*\n` + (inadimplentes.length===0 ? '_Nenhuma pendencia_\n' : inadimplentes.map(a=>`- ${a.nome} (${formataMoeda(a.valor)})`).join('\n')) + `\n\n`;
       }
-      msg += `💰 *Total Caixa:* ${formataMoeda(arrecadado)}`;
+      msg += `💵 *Total Caixa:* ${formataMoeda(arrecadado)}`;
       document.getElementById('wa-text-preview').textContent = msg;
     }
 
