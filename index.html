@@ -73,6 +73,17 @@
     .wa-message-content { background: #FFFFFF; padding: 12px; border-radius: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: inline-block; min-width: 80%; white-space: pre-wrap; font-family: inherit; }
     .btn-whatsapp { background: #25D366; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
     .toast-notification { position: fixed; bottom: 24px; right: 24px; background: var(--color-dark); color: #fff; padding: 12px 24px; border-radius: var(--border-radius-md); display: none; z-index: 1000; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border-radius: var(--border-radius-lg); padding: 2rem; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .modal-box h3 { font-size: 18px; font-weight: 700; color: var(--color-dark); margin-bottom: 0.5rem; }
+    .modal-box p { font-size: 13px; color: var(--color-text-muted); margin-bottom: 1.5rem; }
+    .modal-footer { display: flex; gap: 12px; margin-top: 1.5rem; justify-content: flex-end; }
+    .btn-secondary { background: #F1F5F9; color: var(--color-dark); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-warning { background: #F59E0B; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .atleta-row-valor { display: flex; align-items: center; gap: 8px; }
+    .btn-edit-inline { background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px; font-size: 14px; }
+    .input-valor-inline { width: 100px; padding: 4px 8px; border: 1px solid var(--color-primary); border-radius: var(--border-radius-sm); font-size: 13px; }
   </style>
 </head>
 <body>
@@ -139,7 +150,10 @@
           <button class="btn-action" style="margin-top:1.5rem" onclick="cadastrarAtleta()"><i class="ti ti-plus"></i> Salvar Jogador</button>
         </div>
         <div class="section-card">
-          <h3>Elenco Registrado</h3>
+          <h3 style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            Elenco Registrado
+            <button class="btn-warning" onclick="abrirModalMensalidade()"><i class="ti ti-coins"></i> Alterar Mensalidade em Massa</button>
+          </h3>
           <div class="table-container" id="lista-atletas-container"></div>
         </div>
       </div>
@@ -181,6 +195,25 @@
           <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 1rem;">Nota: A pré-visualização acima pode ocultar os emojis, mas eles serão enviados perfeitamente ao clicar no botão.</div>
           <button class="btn-whatsapp" onclick="enviarParaWhatsApp()"><i class="ti ti-brand-whatsapp"></i> Compartilhar no WhatsApp</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Alterar mensalidade em massa -->
+  <div class="modal-overlay" id="modal-mensalidade">
+    <div class="modal-box">
+      <h3><i class="ti ti-coins" style="color:#F59E0B"></i> Alterar Mensalidade em Massa</h3>
+      <p>Define um novo valor de mensalidade para <strong>todos</strong> os atletas cadastrados de uma só vez.</p>
+      <div class="input-group">
+        <label class="input-label">Novo Valor (R$)</label>
+        <input type="number" id="novo-valor-massa" class="custom-input" placeholder="Ex: 60" min="0" step="0.01">
+      </div>
+      <div style="background:#FEF3C7; border:1px solid #FDE68A; border-radius:var(--border-radius-md); padding:12px; font-size:13px; color:#92400E;">
+        <i class="ti ti-alert-triangle"></i> Isso vai sobrescrever o valor individual de cada atleta. Pagamentos já registrados não serão afetados.
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="fecharModalMensalidade()">Cancelar</button>
+        <button class="btn-warning" onclick="aplicarMensalidadeEmMassa()"><i class="ti ti-check"></i> Aplicar para Todos</button>
       </div>
     </div>
   </div>
@@ -300,9 +333,66 @@
     function atualizarAbaAtletas() {
       const container = document.getElementById('lista-atletas-container');
       if(atletas.length === 0) { container.innerHTML = '<div class="empty-state">Nenhum jogador.</div>'; return; }
-      container.innerHTML = `<table class="app-table"><thead><tr><th>Nome</th><th>Posição</th><th>Valor</th><th>Ação</th></tr></thead><tbody>` +
-        atletas.map(a => `<tr><td><strong>${a.nome}</strong></td><td>${a.posicao||'—'}</td><td>${formataMoeda(a.valor)}</td><td><button class="btn-delete" onclick="deletarAtleta('${a.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('') + `</tbody></table>`;
+      container.innerHTML = `<table class="app-table"><thead><tr><th>Nome</th><th>Posição</th><th>Mensalidade</th><th>Ações</th></tr></thead><tbody>` +
+        atletas.map(a => `<tr>
+          <td><strong>${a.nome}</strong></td>
+          <td>${a.posicao||'—'}</td>
+          <td>
+            <div class="atleta-row-valor">
+              <span id="val-texto-${a.id}">${formataMoeda(a.valor)}</span>
+              <input type="number" id="val-input-${a.id}" class="input-valor-inline" value="${a.valor}" style="display:none" min="0" step="0.01">
+              <button class="btn-edit-inline" id="btn-editar-${a.id}" title="Editar valor" onclick="iniciarEdicaoValor('${a.id}')"><i class="ti ti-pencil"></i></button>
+              <button class="btn-edit-inline" id="btn-salvar-${a.id}" title="Salvar" style="display:none; color:var(--color-success)" onclick="salvarEdicaoValor('${a.id}')"><i class="ti ti-check"></i></button>
+              <button class="btn-edit-inline" id="btn-cancelar-${a.id}" title="Cancelar" style="display:none; color:var(--color-danger)" onclick="atualizarAbaAtletas()"><i class="ti ti-x"></i></button>
+            </div>
+          </td>
+          <td><button class="btn-delete" onclick="deletarAtleta('${a.id}')"><i class="ti ti-trash"></i></button></td>
+        </tr>`).join('') + `</tbody></table>`;
     }
+
+    function iniciarEdicaoValor(id) {
+      document.getElementById('val-texto-' + id).style.display = 'none';
+      document.getElementById('val-input-' + id).style.display = 'inline-block';
+      document.getElementById('btn-editar-' + id).style.display = 'none';
+      document.getElementById('btn-salvar-' + id).style.display = 'inline-flex';
+      document.getElementById('btn-cancelar-' + id).style.display = 'inline-flex';
+      document.getElementById('val-input-' + id).focus();
+    }
+
+    function salvarEdicaoValor(id) {
+      const novoValor = parseFloat(document.getElementById('val-input-' + id).value);
+      if(isNaN(novoValor) || novoValor < 0) { emitirAviso('Valor inválido!'); return; }
+      const atleta = atletas.find(a => a.id === id);
+      if(!atleta) return;
+      atleta.valor = novoValor;
+      salvarFirebase();
+      emitirAviso(`Mensalidade de ${atleta.nome} atualizada!`);
+    }
+
+    function abrirModalMensalidade() {
+      document.getElementById('novo-valor-massa').value = '';
+      document.getElementById('modal-mensalidade').classList.add('open');
+      setTimeout(() => document.getElementById('novo-valor-massa').focus(), 100);
+    }
+
+    function fecharModalMensalidade() {
+      document.getElementById('modal-mensalidade').classList.remove('open');
+    }
+
+    function aplicarMensalidadeEmMassa() {
+      const novoValor = parseFloat(document.getElementById('novo-valor-massa').value);
+      if(isNaN(novoValor) || novoValor < 0) { emitirAviso('Informe um valor válido!'); return; }
+      if(atletas.length === 0) { emitirAviso('Nenhum atleta cadastrado.'); return; }
+      atletas.forEach(a => a.valor = novoValor);
+      salvarFirebase();
+      fecharModalMensalidade();
+      emitirAviso(`Mensalidade de todos os atletas atualizada para ${formataMoeda(novoValor)}!`);
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('modal-mensalidade').addEventListener('click', function(e) {
+      if(e.target === this) fecharModalMensalidade();
+    });
 
     function atualizarAbaMensalidades() {
       document.getElementById('pg-atleta').innerHTML = '<option value="">Escolha...</option>' + atletas.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
